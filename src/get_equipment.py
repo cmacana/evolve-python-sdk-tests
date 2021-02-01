@@ -24,7 +24,7 @@ async def main():
     async with connect_async(host=args.host, rpc_port=args.rpc_port) as channel:
         service = NetworkService()
         client = NetworkConsumerClient(channel)
-        result = (await client.get_feeder(service, args.feeder_mrid)).throw_on_error()
+        result = (await client.get_identified_object(service, args.eq_mrid)).throw_on_error()
         print(args.eq_mrid)
         eq = service.get(args.eq_mrid)
         print(f'Equipment name: {eq.name}, Base Voltage: {eq.base_voltage}')
