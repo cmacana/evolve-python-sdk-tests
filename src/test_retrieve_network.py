@@ -3,7 +3,7 @@ import sys
 import getopt
 
 from zepben.evolve import connect_async, NetworkConsumerClient
-from zepben.evolve import NetworkService, Equipment
+from zepben.evolve import Equipment
 
 
 def print_feeder_eq(service):
@@ -12,7 +12,6 @@ def print_feeder_eq(service):
 
 
 async def main(argv):
-    feeder_mrid = ''
     rpc_port = 50052
     host = "localhost"
     try:
@@ -34,8 +33,6 @@ async def main(argv):
         client = NetworkConsumerClient(channel)
         result = (await client.retrieve_network()).throw_on_error()
         service = result.result.network_service
-        print(feeder_mrid)
-        print(service.get(feeder_mrid))
         print_feeder_eq(service)
 
 

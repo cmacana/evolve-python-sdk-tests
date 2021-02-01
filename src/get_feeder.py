@@ -3,12 +3,12 @@ import sys
 import getopt
 
 from zepben.evolve import connect_async, NetworkConsumerClient
-from zepben.evolve import NetworkService, Equipment, EnergySource, ConductingEquipment
+from zepben.evolve import NetworkService, Equipment
 
 
 def print_feeder_eq(service):
     for eq in service.objects(Equipment):
-        print(eq.mrid, eq.name, type(eq).__name__, eq.get_base_voltage(), eq)
+        print(eq.mrid, eq.name, type(eq).__name__, eq.get_base_voltage())
 
 
 async def main(argv):
