@@ -12,8 +12,8 @@ def print_feeder_eq(service):
 
 
 async def main(argv):
-    rpc_port = 50052
-    host = "localhost"
+    rpc_port = 9014
+    host = "ewb.essentialenergy.zepben.com"
     try:
         opts, args = getopt.getopt(argv, "h:i:p:u:", ["mrid=", "port=", "host="])
     except getopt.GetoptError:
