@@ -21,7 +21,7 @@ async def main():
     async with connect_async(host=args.server, rpc_port=args.rpc_port) as channel:
         client = NetworkConsumerClient(channel)
         net = NetworkService()
-        result = (await client.get_feeder(net, mrid=args.feeder_mrid)).throw_on_error()
+        (await client.get_feeder(net, mrid=args.feeder_mrid)).throw_on_error()
         print(net.get(feeder_mrid))
         print_feeder_eq(net)
 
