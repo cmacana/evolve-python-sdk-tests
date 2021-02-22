@@ -1,6 +1,5 @@
 import asyncio
-import sys
-import getopt
+import argparse
 
 from zepben.evolve import connect_async, NetworkConsumerClient
 from zepben.evolve import NetworkService, Equipment
@@ -11,34 +10,22 @@ def print_feeder_eq(service):
         print(eq.mrid, eq.name, type(eq).__name__, eq.get_base_voltage())
 
 
-async def main(argv):
-    feeder_mrid = ''
-    rpc_port = 50052
-    host = "localhost"
-    try:
-        opts, args = getopt.getopt(argv, "h:i:p:u:", ["mrid=", "port=", "host="])
-    except getopt.GetoptError:
-        print('get_feeder.py -i <feeder_mrid> -p <rpc_port> -u <host>')
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print('get_feeder.py -p <rpc_port> -i <feeder_mrid>')
-            sys.exit()
-        elif opt in ("-i", "--mrid"):
-            feeder_mrid = arg
-        elif opt in ("-p", "--port"):
-            rpc_port = arg
-        elif opt in ("-u", "--host"):
-            host = arg
-    async with connect_async(host=host, rpc_port=rpc_port) as channel:
-        service = NetworkService()
+async def main():
+    feeder_mrid = "CPM3B3"
+    parser = argparse.ArgumentParser(description="Integration Test of retrieve_network")
+    parser.add_argument('server', help='Host and port of grpc server', metavar="host:port", nargs="?",
+                        default="ewb.essentialenergy.zepben.com")
+    parser.add_argument('--rpc-port', help="The gRPC port for the server", default="9014")
+    parser.add_argument('--feeder-mrid', help="The Feeder mRID", default="CPM3B3")
+    args = parser.parse_args()
+    async with connect_async(host=args.server, rpc_port=args.rpc_port) as channel:
         client = NetworkConsumerClient(channel)
-        result = (await client.get_feeder(service, feeder_mrid)).throw_on_error()
-        print(feeder_mrid)
-        print(service.get(feeder_mrid))
-        print_feeder_eq(service)
+        net = NetworkService()
+        result = (await client.get_feeder(net, mrid=args.feeder_mrid)).throw_on_error()
+        print(net.get(feeder_mrid))
+        print_feeder_eq(net)
 
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main(sys.argv[1:]))
+    loop.run_until_complete(main())
