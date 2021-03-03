@@ -1,1 +1,9 @@
+# IDE related
 /.idea/
+
+# Build related
+build
+dist
+
+# Environment related
+venv
