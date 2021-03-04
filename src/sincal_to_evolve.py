@@ -1,7 +1,7 @@
 from zepben.evolve import *
 from typing import List, Optional, Generator
 import pyodbc
-import pandas  as pd
+import pandas as pd
 
 path = "G:\\My Drive\\ZeppelinBend\\SD - Software Dev\\EWB\\Sample Data\\sincal_master_db" \
        "\\Local line types Version 16.mdb "
@@ -20,19 +20,27 @@ class PowerTransformerTankInfo(AssetInfo):
 
 class TransformerEndInfo(AssetInfo):
     # TODO: Add this class to the SDKs
-    ratedU: int = -1
-    ratedS: int = -1
-    endNumber: int = -1
-    emergencyS: int = -1
+    ratedS: int = -9999
+    ratedU: int = -9999
+    endNumber: int = -9999
+    emergencyS: int = -9999
     power_transformer_tank_info: Optional[PowerTransformerTankInfo] = None
 
 
-class ShortCircuitTest():
-    voltage: int = -1
+class TransformerTest(IdentifiedObject):
+    base_power: int = -9999
+    temperature: int = -9999
+
+
+class ShortCircuitTest(TransformerTest):
+    voltage: int = -9999
+    power: int = -9999
+    current: int = -9999
 
 
 net = NetworkService()
 for index, row in std_two_winding_transformer_df.iterrows():
+    # Mapping of the Asset Info
     pt_info = PowerTransformerInfo()
     pt_info.mrid = int(row['Element_ID'])  # Could be also mapped to the pt_info name
     ptt_info = PowerTransformerTankInfo()
@@ -48,3 +56,16 @@ for index, row in std_two_winding_transformer_df.iterrows():
     ptei2.ratedS = int(row['Sn'] * 1000000)
     ptei2.emergencyS = int(row['Smax'] * 1000000)
     ptei2.power_transformer_tank_info = ptt_info
+
+    # Mapping of the ShortCircuitTest
+    # Assuming a model referred to the powerTransformerEnd with endNumber= 1.
+    sc_test = ShortCircuitTest(test=1)
+    sc_test.base_power = int(row['Smax'] * 1000000)
+    sc_test.power = int(row['ur'] * ptei1.ratedU * sc_test.current / 100)
+    sc_test.current = float(sc_test.base_power / ptei1.ratedU)
+    sc_test.voltage = int(row['ur'] * ptei1.ratedU / 100)
+    net.add(sc_test)
+
+sc_list = list(net.objects(ShortCircuitTest))
+for sc in sc_list:
+    sc.__dict__
