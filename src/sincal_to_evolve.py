@@ -1,4 +1,8 @@
+# from dataclassy import dataclass
+from dataclasses import dataclass
+from pandas import DataFrame
 from zepben.evolve import *
+from zepben.evolve.services.network.network_extensions import *
 from typing import List, Optional, Generator
 import pyodbc
 import pandas as pd
@@ -12,10 +16,16 @@ std_two_winding_transformer_df = pd.read_sql(query, conn)
 conn.close()
 
 
-class PowerTransformerTankInfo(AssetInfo):
-    # TODO: Add this class to the SDKs
-    power_transformer_info: Optional[PowerTransformerInfo] = None
+class PowerTransformerEndInfo(AssetInfo):
+    power_transformer_info: str = None
     """"The power transformer info of this power transformer tank info."""
+    # TODO: Add this class to the SDKs
+
+
+class PowerTransformerTankInfo(AssetInfo):
+    power_transformer_info: str = None
+    """"The power transformer info of this power transformer tank info."""
+    # TODO: Add this class to the SDKs
 
 
 class TransformerEndInfo(AssetInfo):
@@ -27,28 +37,36 @@ class TransformerEndInfo(AssetInfo):
     power_transformer_tank_info: Optional[PowerTransformerTankInfo] = None
 
 
-class TransformerTest(IdentifiedObject):
+@dataclass
+class TransformerTest(IdentifiedObject1):
     base_power: int = -9999
     temperature: int = -9999
 
 
+@dataclass
 class ShortCircuitTest(TransformerTest):
     voltage: int = -9999
     power: int = -9999
     current: int = -9999
 
 
+@dataclass
+class Test:
+    mrid: str
+
+
 net = NetworkService()
+
 for index, row in std_two_winding_transformer_df.iterrows():
     # Mapping of the Asset Info
-    pt_info = PowerTransformerInfo()
-    pt_info.mrid = int(row['Element_ID'])  # Could be also mapped to the pt_info name
-    ptt_info = PowerTransformerTankInfo()
-    ptt_info.power_transformer_info = pt_info
+    pt_info = PowerTransformerInfo(mrid=2)  # Could be also mapped to the pt_info name
+    ptt_info = PowerTransformerTankInfo(power_transformer_info='pt_info')
+    net.add(ptt_info)
     ptei1 = TransformerEndInfo()
+    ptei1.emergencyS = int(row['Smax'] * 1000000)
     ptei1.ratedU = int(row['Un1'] * 1000)
     ptei1.ratedS = int(row['Sn'] * 1000000)
-    ptei1.ratedS = int(row['Sn'] * 1000000)
+    net.add(ptei1)
     ptei1.emergencyS = int(row['Smax'] * 1000000)
     ptei1.power_transformer_tank_info = ptt_info
     ptei2 = TransformerEndInfo()
@@ -59,13 +77,20 @@ for index, row in std_two_winding_transformer_df.iterrows():
 
     # Mapping of the ShortCircuitTest
     # Assuming a model referred to the powerTransformerEnd with endNumber= 1.
-    sc_test = ShortCircuitTest(test=1)
-    sc_test.base_power = int(row['Smax'] * 1000000)
+    sc_test = ShortCircuitTest(base_power=int(row['Smax'] * 1000000), voltage=int(row['ur'] * ptei1.ratedU / 100))
     sc_test.power = int(row['ur'] * ptei1.ratedU * sc_test.current / 100)
     sc_test.current = float(sc_test.base_power / ptei1.ratedU)
-    sc_test.voltage = int(row['ur'] * ptei1.ratedU / 100)
     net.add(sc_test)
-
-sc_list = list(net.objects(ShortCircuitTest))
+#
+sc_list = list(net.objects(TransformerEndInfo))
+d = {}
 for sc in sc_list:
-    sc.__dict__
+    for x in sc.__dict__:
+        a = getattr(sc, x)
+        m = d.get(x, [])
+        m.append(a)
+        d[x] = m
+
+print(d)
+df = pd.DataFrame()
+df.to_csv('out.csv')
