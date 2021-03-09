@@ -1,8 +1,7 @@
-from typing import Optional
-
 import pandas as pd
 import pyodbc
-from zepben.evolve import *
+
+from tranformer_end_info_extra import *
 
 path = "G:\\My Drive\\ZeppelinBend\\SD - Software Dev\\EWB\\Sample Data\\sincal_master_db" \
        "\\Local line types Version 16.mdb "
@@ -11,48 +10,6 @@ conn = pyodbc.connect(
 query = 'select * from StdTwoWindingTransformer'
 std_two_winding_transformer_df = pd.read_sql(query, conn)
 conn.close()
-
-
-class PowerTransformerEndInfo(AssetInfo):
-    power_transformer_info: str = None
-    """"The power transformer info of this power transformer tank info."""
-    # TODO: Add this class to the SDKs
-
-
-class PowerTransformerTankInfo(AssetInfo):
-    power_transformer_info: str = None
-    """"The power transformer info of this power transformer tank info."""
-    # TODO: Add this class to the SDKs
-
-
-class TransformerTest(IdentifiedObject):
-    base_power: int = -9999
-    temperature: int = -9999
-
-
-class ShortCircuitTest(TransformerTest):
-    voltage: int = -9999
-    power: int = -9999
-    current: int = -9999
-
-
-class NoLoadTest(TransformerTest):
-    loss: int = -9999
-    excitingCurrent: int = -9999
-
-
-class TransformerEndInfo(AssetInfo):
-    # TODO: Add this class to the SDKs
-    ratedS: int = -9999
-    ratedU: int = -9999
-    endNumber: int = -9999
-    emergencyS: int = -9999
-    power_transformer_tank_info: Optional[PowerTransformerTankInfo] = None
-    short_circuit_test: Optional[ShortCircuitTest] = None
-    no_load_test: Optional[NoLoadTest] = None
-    connection_kind = WindingConnection = None
-    phase_angle_clock: int = -9999
-
 
 net = NetworkService()
 
@@ -79,8 +36,7 @@ for index, row in std_two_winding_transformer_df.iterrows():
     ptei2.power_transformer_tank_info = ptt_info
     ptei2.endNumber = 2
 
-
-    # Mapping of the ShortCircuitTest
+    # Mapping: ShortCircuitTest
     # Assuming a model referred to the powerTransformerEnd with endNumber= 1.
     sc_test = ShortCircuitTest()
     sc_test.base_power = int(row['Smax'] * 1000000)
@@ -111,7 +67,6 @@ for pti in ptei_list:
         m.append(a)
         d[x] = m
 
-print(d)
 df = pd.DataFrame(d)
 df.to_csv('TransformerEndInfo.csv')
 
@@ -125,7 +80,6 @@ for sc in sc_list:
         m.append(a)
         d[x] = m
 
-print(d)
 df = pd.DataFrame(d)
 df.to_csv('ShortCircuitTest.csv')
 
@@ -138,6 +92,5 @@ for nl in nl_list:
         m = d.get(x, [])
         m.append(a)
         d[x] = m
-print(d)
 df = pd.DataFrame(d)
 df.to_csv('NoLoadTest.csv')
