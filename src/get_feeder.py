@@ -1,13 +1,30 @@
-import asyncio
 import argparse
+import asyncio
 
+from zepben.evolve import NetworkService, Equipment, Meter, UsagePoint
 from zepben.evolve import connect_async, NetworkConsumerClient
-from zepben.evolve import NetworkService, Equipment
 
 
-def print_feeder_eq(service):
+def get_list_of_equipment(service):
     for eq in service.objects(Equipment):
         print(eq.mrid, eq.name, type(eq).__name__, eq.get_base_voltage())
+
+
+def get_premise_id_by_equipment_mrid(service):
+    for eq in service.objects(Equipment):
+        for up in list(eq.usage_points):
+            for mt in list(up.end_devices):
+                print(f"The equipment {eq.name} has the premise ID {mt.service_location.name}")
+
+
+def get_premise_ids(service):
+    for meter in service.objects(Meter):
+        print(meter.service_location.name)
+
+
+def get_usage_points(service):
+    for ups in service.objects(UsagePoint):
+        print(ups)
 
 
 async def main():
@@ -23,7 +40,6 @@ async def main():
         net = NetworkService()
         (await client.get_feeder(net, mrid=args.feeder_mrid)).throw_on_error()
         print(net.get(feeder_mrid))
-        print_feeder_eq(net)
 
 
 if __name__ == "__main__":
