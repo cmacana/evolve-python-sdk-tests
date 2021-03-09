@@ -1,11 +1,8 @@
-# from dataclassy import dataclass
-from dataclasses import dataclass
-from pandas import DataFrame
-from zepben.evolve import *
-from zepben.evolve.services.network.network_extensions import *
-from typing import List, Optional, Generator
-import pyodbc
+from typing import Optional
+
 import pandas as pd
+import pyodbc
+from zepben.evolve import *
 
 path = "G:\\My Drive\\ZeppelinBend\\SD - Software Dev\\EWB\\Sample Data\\sincal_master_db" \
        "\\Local line types Version 16.mdb "
@@ -28,6 +25,22 @@ class PowerTransformerTankInfo(AssetInfo):
     # TODO: Add this class to the SDKs
 
 
+class TransformerTest(IdentifiedObject):
+    base_power: int = -9999
+    temperature: int = -9999
+
+
+class ShortCircuitTest(TransformerTest):
+    voltage: int = -9999
+    power: int = -9999
+    current: int = -9999
+
+
+class NoLoadTest(TransformerTest):
+    loss: int = -9999
+    excitingCurrent: int = -9999
+
+
 class TransformerEndInfo(AssetInfo):
     # TODO: Add this class to the SDKs
     ratedS: int = -9999
@@ -35,24 +48,10 @@ class TransformerEndInfo(AssetInfo):
     endNumber: int = -9999
     emergencyS: int = -9999
     power_transformer_tank_info: Optional[PowerTransformerTankInfo] = None
-
-
-@dataclass
-class TransformerTest(IdentifiedObject):
-    base_power: int = -9999
-    temperature: int = -9999
-
-
-@dataclass
-class ShortCircuitTest(TransformerTest):
-    voltage: int = -9999
-    power: int = -9999
-    current: int = -9999
-
-
-@dataclass
-class Test:
-    mrid: str
+    short_circuit_test: Optional[ShortCircuitTest] = None
+    no_load_test: Optional[NoLoadTest] = None
+    connection_kind = WindingConnection = None
+    phase_angle_clock: int = -9999
 
 
 net = NetworkService()
@@ -62,35 +61,83 @@ for index, row in std_two_winding_transformer_df.iterrows():
     pt_info = PowerTransformerInfo(mrid=2)  # Could be also mapped to the pt_info name
     ptt_info = PowerTransformerTankInfo(power_transformer_info='pt_info')
     net.add(ptt_info)
+    # Adding PowerTranformerEndInfos
     ptei1 = TransformerEndInfo()
+    ptei1.name = str(int(row['Element_ID'])) + "-ptei-1"
+    ptei1.endNumber = 1
     ptei1.emergencyS = int(row['Smax'] * 1000000)
     ptei1.ratedU = int(row['Un1'] * 1000)
     ptei1.ratedS = int(row['Sn'] * 1000000)
-    net.add(ptei1)
     ptei1.emergencyS = int(row['Smax'] * 1000000)
     ptei1.power_transformer_tank_info = ptt_info
+
     ptei2 = TransformerEndInfo()
+    ptei2.name = str(int(row['Element_ID'])) + "-ptei-2"
     ptei2.ratedU = int(row['Un2'] * 1000)
     ptei2.ratedS = int(row['Sn'] * 1000000)
     ptei2.emergencyS = int(row['Smax'] * 1000000)
     ptei2.power_transformer_tank_info = ptt_info
+    ptei2.endNumber = 2
+
 
     # Mapping of the ShortCircuitTest
     # Assuming a model referred to the powerTransformerEnd with endNumber= 1.
-    sc_test = ShortCircuitTest(base_power=int(row['Smax'] * 1000000), voltage=int(row['ur'] * ptei1.ratedU / 100))
-    sc_test.power = int(row['ur'] * ptei1.ratedU * sc_test.current / 100)
+    sc_test = ShortCircuitTest()
+    sc_test.base_power = int(row['Smax'] * 1000000)
+    sc_test.voltage = int(row['uk'])
     sc_test.current = float(sc_test.base_power / ptei1.ratedU)
+    sc_test.power = int(row['ur'] * ptei1.ratedU * sc_test.current / 100)
     net.add(sc_test)
-#
-sc_list = list(net.objects(TransformerEndInfo))
+
+    # Mapping: NoLoadTest
+    nl_test = NoLoadTest()
+    nl_test.loss = float(row['Vfe'])  # SINCAL.TwoWindingTransformer.Vfe : Iron Losses [kW]
+    nl_test.excitingCurrent = float(row['i0'])  # SINCAL.TwoWindingTransformer.i0 : No Load Current [%]
+    net.add(nl_test)
+
+    # Association to Tests
+    ptei1.short_circuit_test = sc_test
+    ptei1.no_load_test = nl_test
+    net.add(ptei1)
+    net.add(ptei2)
+
+# Printing and persisting TransformerEndInfos values
+ptei_list = list(net.objects(TransformerEndInfo))
+d = {}
+for pti in ptei_list:
+    for x in pti.__slots__:
+        a = getattr(pti, x)
+        m = d.get(x, [])
+        m.append(a)
+        d[x] = m
+
+print(d)
+df = pd.DataFrame(d)
+df.to_csv('TransformerEndInfo.csv')
+
+# Printing and persisting ShorCircuitTest values
+sc_list = list(net.objects(ShortCircuitTest))
 d = {}
 for sc in sc_list:
-    for x in sc.__dict__:
+    for x in sc.__slots__:
         a = getattr(sc, x)
         m = d.get(x, [])
         m.append(a)
         d[x] = m
 
 print(d)
-df = pd.DataFrame()
-df.to_csv('out.csv')
+df = pd.DataFrame(d)
+df.to_csv('ShortCircuitTest.csv')
+
+## Printing and persisting NoLoadTest values
+nl_list = list(net.objects(NoLoadTest))
+d = {}
+for nl in nl_list:
+    for x in nl.__slots__:
+        a = getattr(nl, x)
+        m = d.get(x, [])
+        m.append(a)
+        d[x] = m
+print(d)
+df = pd.DataFrame(d)
+df.to_csv('NoLoadTest.csv')
