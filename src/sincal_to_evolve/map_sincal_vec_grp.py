@@ -8,7 +8,21 @@ def DD0(ptei1: TransformerEndInfo, ptei2: TransformerEndInfo):
     return [ptei1, ptei2]
 
 
-vect_grp_dict = {1: 'DD0', 5: 'YNYN0', 14: 'YND1',
+def YNYN0(ptei1: TransformerEndInfo, ptei2: TransformerEndInfo):
+    ptei1.connection_kind = WindingConnection.Yn
+    ptei1.phase_angle_clock = 0
+    ptei2.connection_kind = WindingConnection.Yn
+    return [ptei1, ptei2]
+
+
+def YND1(ptei1: TransformerEndInfo, ptei2: TransformerEndInfo):
+    ptei1.connection_kind = WindingConnection.Yn
+    ptei2.connection_kind = WindingConnection.D
+    ptei1.phase_angle_clock = 1
+    return [ptei1, ptei2]
+
+
+vect_grp_dict = {1: DD0, 5: YNYN0, 14: YND1,
                  2: 'DZ0', 59: 'DYN11', 70: 'DY1', 71: 'Y0', 72: 'YN0', 73: 'D0', 74: 'ZNY1', 75: 'ZNY7',
                  76: 'DDN0'}
 # TODO: Add all vector groups to the dictionary
