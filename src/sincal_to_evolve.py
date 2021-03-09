@@ -38,7 +38,7 @@ class TransformerEndInfo(AssetInfo):
 
 
 @dataclass
-class TransformerTest(IdentifiedObject1):
+class TransformerTest(IdentifiedObject):
     base_power: int = -9999
     temperature: int = -9999
 
