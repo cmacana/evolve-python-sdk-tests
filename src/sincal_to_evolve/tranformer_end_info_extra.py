@@ -1,4 +1,3 @@
-from math import nan, inf
 from typing import Optional
 
 from zepben.evolve import *
@@ -37,3 +36,11 @@ class TransformerEndInfo(AssetInfo):
     no_load_test: Optional[NoLoadTest] = None
     connection_kind: WindingConnection = None
     phase_angle_clock: int = -9999
+
+
+class TransformerStarImpedance(IdentifiedObject):
+    r: float = -9999.9
+    r0: float = -9999.9
+    x: float = -9999.9
+    x0: float = -9999.9
+    transformer_end_info: Optional[TransformerEndInfo] = None
