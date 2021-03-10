@@ -59,6 +59,10 @@ for index, row in std_two_winding_transformer_df.iterrows():
     net.add(ptei1)
     net.add(ptei2)
 
+    # TransformerStarImpedance
+
+
+
 # Printing and persisting TransformerEndInfos values
 ptei_list = list(net.objects(TransformerEndInfo))
 d = {}
