@@ -1,3 +1,4 @@
+from math import nan, inf
 from typing import Optional
 
 from zepben.evolve import *

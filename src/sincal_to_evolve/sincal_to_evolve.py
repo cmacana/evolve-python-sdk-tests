@@ -1,7 +1,7 @@
 import pandas as pd
 import pyodbc
 
-from tranformer_end_info_extra import *
+from map_sincal_vec_grp import *
 
 path = "G:\\My Drive\\ZeppelinBend\\SD - Software Dev\\EWB\\Sample Data\\sincal_master_db" \
        "\\Local line types Version 16.mdb "
@@ -18,6 +18,7 @@ for index, row in std_two_winding_transformer_df.iterrows():
     pt_info = PowerTransformerInfo(mrid=2)  # Could be also mapped to the pt_info name
     ptt_info = PowerTransformerTankInfo(power_transformer_info='pt_info')
     net.add(ptt_info)
+
     # Adding PowerTranformerEndInfos
     ptei1 = TransformerEndInfo()
     ptei1.name = str(int(row['Element_ID'])) + "-ptei-1"
@@ -35,7 +36,8 @@ for index, row in std_two_winding_transformer_df.iterrows():
     ptei2.emergencyS = int(row['Smax'] * 1000000)
     ptei2.power_transformer_tank_info = ptt_info
     ptei2.endNumber = 2
-
+    # Setting connection kinds and phase_clock
+    [ptei1, ptei2] = VectorGroupMap(vec_grp=int(row['VecGrp']), ptei1=ptei1, ptei2=ptei2).get_ends_info()
     # Mapping: ShortCircuitTest
     # Assuming a model referred to the powerTransformerEnd with endNumber= 1.
     sc_test = ShortCircuitTest()
@@ -83,7 +85,7 @@ for sc in sc_list:
 df = pd.DataFrame(d)
 df.to_csv('ShortCircuitTest.csv')
 
-## Printing and persisting NoLoadTest values
+# Printing and persisting NoLoadTest values
 nl_list = list(net.objects(NoLoadTest))
 d = {}
 for nl in nl_list:

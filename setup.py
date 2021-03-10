@@ -32,6 +32,9 @@ setup(
     py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
     install_requires=[
         "zepben.evolve",
+        "protobuf",
+        "zepben.protobuf",
+        "requests",
         "grpcio",
         "plotly",
         "python-jose-cryptodome",

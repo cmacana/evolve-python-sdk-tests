@@ -1,46 +1,101 @@
 from tranformer_end_info_extra import *
 
 
-def DD0(ptei1: TransformerEndInfo, ptei2: TransformerEndInfo):
-    ptei1.connection_kind = WindingConnection.D
-    ptei1.phase_angle_clock = 0
-    ptei2.connection_kind = WindingConnection.D
-    return [ptei1, ptei2]
-
-
-def YNYN0(ptei1: TransformerEndInfo, ptei2: TransformerEndInfo):
-    ptei1.connection_kind = WindingConnection.Yn
-    ptei1.phase_angle_clock = 0
-    ptei2.connection_kind = WindingConnection.Yn
-    return [ptei1, ptei2]
-
-
-def YND1(ptei1: TransformerEndInfo, ptei2: TransformerEndInfo):
-    ptei1.connection_kind = WindingConnection.Yn
-    ptei2.connection_kind = WindingConnection.D
-    ptei1.phase_angle_clock = 1
-    return [ptei1, ptei2]
-
-
-vect_grp_dict = {1: DD0, 5: YNYN0, 14: YND1,
-                 2: 'DZ0', 59: 'DYN11', 70: 'DY1', 71: 'Y0', 72: 'YN0', 73: 'D0', 74: 'ZNY1', 75: 'ZNY7',
-                 76: 'DDN0'}
-# TODO: Add all vector groups to the dictionary
-# 3: 'DZN0', 4: 'YNY0', 5: 'YNYN0', 6: 'YY0',
-# 7: 'YYN0', 8: 'ZD0', 9: 'ZND0', 10: 'DYN1', 11: 'DZ1', 12: 'DZN1',
-# 13: 'YD1', , 15: 'YNZN1', 16: 'YZ1', 17: 'YZN1', 18: 'ZD1',
-# 19: 'ZND1', 20: 'ZNYN1', 21: 'ZY1', 22: 'ZYN1', 23: 'DY5',
-# 24: DYN5, 25: YD5, 26: YND5, 27: YNZ5, 28: YNZN5, 29: YZ5, 30: YZN5,
-#  31: ZNY5, 32: ZNYN5, 33: ZY5, 34: ZYN5, 35: DD6, 36: DZ6, 37: DZN6, 38: YNY6,
-#  39: YNYN6, 40: YY6, 41: YYN6, 42: ZD6, 43: ZND6, 44: DY7, 45: DYN7, 46: DZ7, 47: DZN7, 48: YD7,
-#  49: YND7, 50: YNZN7, 51: YZ7, 52: YZN7, 53: ZD7, 54: ZND7, 55: ZNYN7, 56: ZY7, 57: ZYN7,
-#  58: DY11, 59: DYN11, 60: YD11, 61: YND11, 62: YNZ11, 63: YNZN11, 64: YZ11, 65: YZN11, 66: ZNY11,
-#  67: ZNYN11, 68: ZY11, 69: ZYN11, 70: DY1, 71: Y0, 72: YN0, 73: D0, 74: ZNY1, 75: ZNY7, 76: DDN0,
-#  77: DND0, 78: DNYN1, 79: DNYN11, 80: YNDN1, 81: YNDN11}
-
 # Mapping SINCAL.TwoWindingTransformer.VectorGroup
-# vec_grp_str = vect_grp_dict[row['VecGrp']]
-# split_vec_grp = []
-# split_vec_grp[:] = vec_grp_str
 
-# connection_dict = {'N': WindingConnection.N, 'D': WindingConnection.D, 'Y': WindingConnection.Y}
+class VectorGroupMap(object):
+
+    def __init__(self, vec_grp: int, ptei1: TransformerEndInfo, ptei2: TransformerEndInfo = None):
+        self.ptei1: TransformerEndInfo = ptei1
+        self.ptei2: TransformerEndInfo = ptei2
+        self.vec_grp: str = vec_grp
+        self.vec_grp_to_end_info()
+
+    def DD0(self):
+        self.ptei1.connection_kind = WindingConnection.D
+        self.ptei1.phase_angle_clock = 0
+        self.ptei2.connection_kind = WindingConnection.D
+        self.ptei1.phase_angle_clock = 0
+
+    def YNYN0(self):
+        self.ptei1.connection_kind = WindingConnection.Yn
+        self.ptei1.phase_angle_clock = 0
+        self.ptei2.connection_kind = WindingConnection.Yn
+        self.ptei2.phase_angle_clock = 0
+
+    def YND1(self):
+        self.ptei1.connection_kind = WindingConnection.Yn
+        self.ptei1.phase_angle_clock = 0
+        self.ptei2.connection_kind = WindingConnection.D
+        self.ptei1.phase_angle_clock = 1
+
+    def YND1(self):
+        self.ptei1.connection_kind = WindingConnection.Yn
+        self.ptei1.phase_angle_clock = 0
+        self.ptei2.connection_kind = WindingConnection.D
+        self.ptei1.phase_angle_clock = 1
+
+    def DYN11(self):
+        self.ptei1.connection_kind = WindingConnection.D
+        self.ptei2.connection_kind = WindingConnection.Yn
+        self.ptei1.phase_angle_clock = 1
+        self.ptei2.phase_angle_clock = 1
+
+    def DY1(self):
+        self.ptei1.connection_kind = WindingConnection.D
+        self.ptei1.phase_angle_clock = 0
+        self.ptei2.connection_kind = WindingConnection.Y
+        self.ptei2.phase_angle_clock = 1
+
+    def Y0(self):
+        self.ptei1.connection_kind = WindingConnection.Y
+        self.ptei1.phase_angle_clock = 0
+
+    def YN0(self):
+        self.ptei1.connection_kind = WindingConnection.Yn
+        self.ptei1.phase_angle_clock = 0
+
+    def D0(self):
+        self.ptei1.connection_kind = WindingConnection.D
+        self.ptei1.phase_angle_clock = 0
+
+    def ZNY1(self):
+        self.ptei1.connection_kind = WindingConnection.Zn
+        self.ptei1.phase_angle_clock = 0
+        self.ptei2.connection_kind = WindingConnection.Y
+        self.ptei2.phase_angle_clock = 1
+
+    def ZNY7(self):
+        self.ptei1.connection_kind = WindingConnection.Zn
+        self.ptei1.phase_angle_clock = 0
+        self.ptei2.connection_kind = WindingConnection.Y
+        self.ptei2.phase_angle_clock = 7
+
+    def DDN0(self):
+        self.ptei1.connection_kind = WindingConnection.D
+        self.ptei1.phase_angle_clock = 0
+        self.ptei2.connection_kind = WindingConnection.D
+        self.ptei2.phase_angle_clock = 0
+
+    def vec_grp_to_end_info(self):
+        vec_grp_dict = {1: self.DD0, 5: self.YNYN0, 14: self.YND1, 59: self.DYN11, 70: self.DY1, 71: self.Y0,
+                        72: self.YN0, 73: self.D0, 74: self.ZNY1, 75: self.ZNY7,
+                        76: self.DDN0}
+        vec_grp_dict.get(self.vec_grp)()
+
+    def get_ends_info(self):
+        return [self.ptei1, self.ptei2]
+
+
+# TODO: Add all vector groups to the dictionary. Only VecGrp recorded on the EE Sincal Master db has beed supported
+# Vector Group 1: dd0, 2: dz0, 3: dzn0, 4: yny0, 5: ynyn0, 6: yy0, 7: yyn0,
+# 8: zd0, 9: znd0, 10: dyn1, 11: dz1, 12: dzn1, 13: yd1, 14: ynd1, 15: ynzn1,
+# 16: yz1, 17: yzn1, 18: zd1, 19: znd1, 20: znyn1, 21: zy1, 22: zyn1, 23: dy5,
+# 24: dyn5, 25: yd5, 26: ynd5, 27: ynz5, 28: ynzn5, 29: yz5, 30: yzn5, 31: zny5,
+# 32: znyn5, 33: zy5, 34: zyn5, 35: dd6, 36: dz6, 37: dzn6, 38: yny6, 39: ynyn6,
+# 0: yy6, 41: yyn6, 42: zd6, 43: znd6, 44: dy7, 45: dyn7, 46: dz7, 47: dzn7, 48: yd7,
+# 49: ynd7, 50: ynzn7, 51: yz7, 52: yzn7, 53: zd7, 54: znd7, 55: znyn7, 56: zy7, 57: zyn7,
+# 58: dy11, 59: dyn11, 60: yd11, 61: ynd11, 62: ynz11, 63: ynzn11, 64: yz11, 65: yzn11,
+# 66: zny11, 67: znyn11, 68: zy11, 69: zyn11, 70: dy1, 71: y0, 72: yn0, 73: d0, 74: zny1,
+# 75: zny7, 76: ddn0, 77: dnd0, 78: dnyn1, 79: dnyn11, 80: yndn1, 81: yndn11
+
