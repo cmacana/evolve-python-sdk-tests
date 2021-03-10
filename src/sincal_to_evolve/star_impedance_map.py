@@ -4,7 +4,7 @@ class TransformerStarImpedanceMap:
         self.flag_z0_input: int = flag_z0_input
 
     def z0_z1_r0_x0(self):
-        #TODO
+        # TODO
         pass
 
     def r0_x0(self):
