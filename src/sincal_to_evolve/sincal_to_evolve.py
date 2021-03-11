@@ -3,9 +3,6 @@ import pyodbc
 
 from sincal_model import *
 
-
-
-
 path = "G:\\My Drive\\ZeppelinBend\\SD - Software Dev\\EWB\\Sample Data\\sincal_master_db" \
        "\\Local line types Version 16.mdb "
 conn = pyodbc.connect(
@@ -30,7 +27,7 @@ for index, row in std_two_winding_transformer_df.iterrows():
     ptei1.emergencyS = int(tx.s_max * 1000000)
     ptei1.ratedU = int(tx.un1 * 1000)
     ptei1.ratedS = int(tx.sn*1000000)
-    ptei1.emergencyS = int( tx.s_max * 1000000)
+    ptei1.emergencyS = int(tx.s_max * 1000000)
     ptei1.power_transformer_tank_info = ptt_info
 
     ptei2 = TransformerEndInfo()
@@ -41,20 +38,20 @@ for index, row in std_two_winding_transformer_df.iterrows():
     ptei2.power_transformer_tank_info = ptt_info
     ptei2.endNumber = 2
     # Setting connection kinds and phase_clock
-    [ptei1, ptei2] = VectorGroupMap(vec_grp=int(row['VecGrp']), ptei1=ptei1, ptei2=ptei2).get_ends_info()
+    [ptei1, ptei2] = VectorGroupMap(vec_grp=int(tx.vec_grp), ptei1=ptei1, ptei2=ptei2).get_ends_info()
     # Mapping: ShortCircuitTest
     # Assuming a model referred to the powerTransformerEnd with endNumber= 1.
     sc_test = ShortCircuitTest()
-    sc_test.base_power = int(row['Smax'] * 1000000)
-    sc_test.voltage = int(row['uk'])
+    sc_test.base_power = int(tx.s_max * 1000000)
+    sc_test.voltage = int(tx.uk)
     sc_test.current = float(sc_test.base_power / ptei1.ratedU)
-    sc_test.power = int(row['ur'] * ptei1.ratedU * sc_test.current / 100)
+    sc_test.power = int(tx.ur * ptei1.ratedU * sc_test.current / 100)
     net.add(sc_test)
 
     # Mapping: NoLoadTest
     nl_test = NoLoadTest()
-    nl_test.loss = float(row['Vfe'])  # SINCAL.TwoWindingTransformer.Vfe : Iron Losses [kW]
-    nl_test.excitingCurrent = float(row['i0'])  # SINCAL.TwoWindingTransformer.i0 : No Load Current [%]
+    nl_test.loss = tx.vfe
+    nl_test.excitingCurrent = tx.i0
     net.add(nl_test)
 
     # Association to Tests
@@ -64,18 +61,8 @@ for index, row in std_two_winding_transformer_df.iterrows():
     net.add(ptei2)
 
     # TransformerStarImpedance
-    # Creating ZeroPhaseSequenceInputData instance
-    zero_phase_input_data = ZeroPhaseSequenceInputData(
-        flag_z0_input=int(row['Flag_Z0_Input']),
-        z0_z1=float(row['Z0_Z1']),
-        r0_x0=float(row['R0_X0']),
-        r0_r1=float(row['R0_R1']),
-        x0_x1=float(row['X0_X1']),
-        r0=float(row['R0']),
-        x0=float(row['X0']),
-        zabnl=float(row['ZABNL']),
-        zbanl=float(row['ZBANL']),
-        zabsc=float(row['ZABSC']))
+
+
 
 # Printing and persisting TransformerEndInfos values
 ptei_list = list(net.objects(TransformerEndInfo))
