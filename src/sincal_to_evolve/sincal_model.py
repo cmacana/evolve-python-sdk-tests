@@ -1,7 +1,32 @@
 from cim_extra import *
 
 
-# Mapping SINCAL.TwoWindingTransformer.VectorGroup
+# Model for SINCAL.TwoWindingTransformer
+
+class ZeroPhaseSequenceInputData:
+    def __init__(self, z0_z1, r0_x0, r0, x0, x0_x1, r0_r1, zabnl, zbanl, zabsc, flag_z0_input: int):
+        self.z0_z1 = z0_z1
+        self.r0_x0 = r0_x0
+        self.r0 = r0
+        self.x0 = x0
+        self.x0_x1 = x0_x1
+        self.r0_r1 = r0_r1
+        self.zabnl = zabnl
+        self.zbanl = zbanl
+        self.zabsc = zabsc
+        self.flag_z0_input: int = flag_z0_input
+
+
+class TwoWindingTransformer:
+
+    def __init__(self, row):
+        self.element_id = int(row['Element_ID'])
+        self.s_max = row['Smax']
+        self.un1 = row['Un1']
+        self.sn = row['Sn']
+        self.s_max = row['Smax']
+        self.un2 = row['Un2']
+
 
 class VectorGroupMap(object):
 

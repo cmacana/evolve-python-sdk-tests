@@ -1,7 +1,10 @@
 import pandas as pd
 import pyodbc
 
-from map_sincal_vec_grp import *
+from sincal_model import *
+
+
+
 
 path = "G:\\My Drive\\ZeppelinBend\\SD - Software Dev\\EWB\\Sample Data\\sincal_master_db" \
        "\\Local line types Version 16.mdb "
@@ -14,6 +17,7 @@ conn.close()
 net = NetworkService()
 
 for index, row in std_two_winding_transformer_df.iterrows():
+    tx = TwoWindingTransformer(row=row)
     # Mapping of the Asset Info
     pt_info = PowerTransformerInfo(mrid=2)  # Could be also mapped to the pt_info name
     ptt_info = PowerTransformerTankInfo(power_transformer_info='pt_info')
@@ -21,19 +25,19 @@ for index, row in std_two_winding_transformer_df.iterrows():
 
     # Adding PowerTranformerEndInfos
     ptei1 = TransformerEndInfo()
-    ptei1.name = str(int(row['Element_ID'])) + "-ptei-1"
+    ptei1.name = str(tx.element_id) + "-ptei-1"
     ptei1.endNumber = 1
-    ptei1.emergencyS = int(row['Smax'] * 1000000)
-    ptei1.ratedU = int(row['Un1'] * 1000)
-    ptei1.ratedS = int(row['Sn'] * 1000000)
-    ptei1.emergencyS = int(row['Smax'] * 1000000)
+    ptei1.emergencyS = int(tx.s_max * 1000000)
+    ptei1.ratedU = int(tx.un1 * 1000)
+    ptei1.ratedS = int(tx.sn*1000000)
+    ptei1.emergencyS = int( tx.s_max * 1000000)
     ptei1.power_transformer_tank_info = ptt_info
 
     ptei2 = TransformerEndInfo()
-    ptei2.name = str(int(row['Element_ID'])) + "-ptei-2"
-    ptei2.ratedU = int(row['Un2'] * 1000)
-    ptei2.ratedS = int(row['Sn'] * 1000000)
-    ptei2.emergencyS = int(row['Smax'] * 1000000)
+    ptei2.name = str(tx.element_id) + "-ptei-2"
+    ptei2.ratedU = int(tx.un2 * 1000)
+    ptei2.ratedS = int(tx.sn * 1000000)
+    ptei2.emergencyS = int(tx.s_max * 1000000)
     ptei2.power_transformer_tank_info = ptt_info
     ptei2.endNumber = 2
     # Setting connection kinds and phase_clock
@@ -60,8 +64,18 @@ for index, row in std_two_winding_transformer_df.iterrows():
     net.add(ptei2)
 
     # TransformerStarImpedance
-
-
+    # Creating ZeroPhaseSequenceInputData instance
+    zero_phase_input_data = ZeroPhaseSequenceInputData(
+        flag_z0_input=int(row['Flag_Z0_Input']),
+        z0_z1=float(row['Z0_Z1']),
+        r0_x0=float(row['R0_X0']),
+        r0_r1=float(row['R0_R1']),
+        x0_x1=float(row['X0_X1']),
+        r0=float(row['R0']),
+        x0=float(row['X0']),
+        zabnl=float(row['ZABNL']),
+        zbanl=float(row['ZBANL']),
+        zabsc=float(row['ZABSC']))
 
 # Printing and persisting TransformerEndInfos values
 ptei_list = list(net.objects(TransformerEndInfo))
