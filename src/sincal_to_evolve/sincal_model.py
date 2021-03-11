@@ -2,21 +2,6 @@ from cim_extra import *
 
 
 # Model for SINCAL.TwoWindingTransformer
-
-class ZeroPhaseSequenceInputData:
-    def __init__(self, z0_z1, r0_x0, r0, x0, x0_x1, r0_r1, zabnl, zbanl, zabsc, flag_z0_input: int):
-        self.z0_z1 = z0_z1
-        self.r0_x0 = r0_x0
-        self.r0 = r0
-        self.x0 = x0
-        self.x0_x1 = x0_x1
-        self.r0_r1 = r0_r1
-        self.zabnl = zabnl
-        self.zbanl = zbanl
-        self.zabsc = zabsc
-        self.flag_z0_input: int = flag_z0_input
-
-
 class TwoWindingTransformer:
 
     def __init__(self, row):
@@ -26,6 +11,21 @@ class TwoWindingTransformer:
         self.sn = row['Sn']
         self.s_max = row['Smax']
         self.un2 = row['Un2']
+        self.vec_grp = row['VecGrp']
+        self.uk = row['uk']
+        self.ur = row['ur']
+        self.vfe = float(row['Vfe'])  # SINCAL.TwoWindingTransformer.Vfe : Iron Losses [kW]
+        self.i0 = float(row['i0'])  # SINCAL.TwoWindingTransformer.i0 : No Load Current [%]
+        self.flag_z0_input = int(row['Flag_Z0_Input'])
+        self.z0_z1 = float(row['Z0_Z1'])
+        self.r0_x0 = float(row['R0_X0'])
+        self.r0_r1 = float(row['R0_R1'])
+        self.x0_x1 = float(row['X0_X1'])
+        self.r0 = float(row['R0'])
+        self.x0 = float(row['X0'])
+        self.zabnl = float(row['ZABNL'])
+        self.zbanl = float(row['ZBANL'])
+        self.zabsc = float(row['ZABSC'])
 
 
 class VectorGroupMap(object):
@@ -111,7 +111,6 @@ class VectorGroupMap(object):
     def get_ends_info(self):
         return [self.ptei1, self.ptei2]
 
-
 # TODO: Add all vector groups to the dictionary. Only VecGrp recorded on the EE Sincal Master db has beed supported
 # Vector Group 1: dd0, 2: dz0, 3: dzn0, 4: yny0, 5: ynyn0, 6: yy0, 7: yyn0,
 # 8: zd0, 9: znd0, 10: dyn1, 11: dz1, 12: dzn1, 13: yd1, 14: ynd1, 15: ynzn1,
@@ -123,4 +122,3 @@ class VectorGroupMap(object):
 # 58: dy11, 59: dyn11, 60: yd11, 61: ynd11, 62: ynz11, 63: ynzn11, 64: yz11, 65: yzn11,
 # 66: zny11, 67: znyn11, 68: zy11, 69: zyn11, 70: dy1, 71: y0, 72: yn0, 73: d0, 74: zny1,
 # 75: zny7, 76: ddn0, 77: dnd0, 78: dnyn1, 79: dnyn11, 80: yndn1, 81: yndn11
-
