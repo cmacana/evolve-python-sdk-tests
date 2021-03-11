@@ -38,7 +38,7 @@ setup(
         "grpcio",
         "plotly",
         "python-jose-cryptodome",
-        "pydash", 'geopandas', 'asyncio', 'pyodbc', 'pandas', 'dataclassy'
+        "pydash", 'geopandas', 'asyncio', 'pyodbc', 'pandas', 'dataclassy','numpy'
     ],
     extras_require={
         "test": test_deps,
