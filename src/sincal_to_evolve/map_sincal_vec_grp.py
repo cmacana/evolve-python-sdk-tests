@@ -1,4 +1,4 @@
-from transformer_end_info_extra import *
+from cim_extra import *
 
 
 # Mapping SINCAL.TwoWindingTransformer.VectorGroup
